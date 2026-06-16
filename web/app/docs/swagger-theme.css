@@ -1,0 +1,182 @@
+/* Dark theme override for swagger-ui-react, mapped onto Pilote Project tokens. */
+
+.swagger-wrap .swagger-ui,
+.swagger-wrap .swagger-ui .info .title,
+.swagger-wrap .swagger-ui .opblock-tag,
+.swagger-wrap .swagger-ui label,
+.swagger-wrap .swagger-ui .opblock .opblock-summary-operation-id,
+.swagger-wrap .swagger-ui .opblock .opblock-summary-path,
+.swagger-wrap .swagger-ui .opblock .opblock-summary-path__deprecated,
+.swagger-wrap .swagger-ui .opblock .opblock-summary-description,
+.swagger-wrap .swagger-ui .opblock-description-wrapper p,
+.swagger-wrap .swagger-ui .opblock-external-docs-wrapper p,
+.swagger-wrap .swagger-ui .opblock-title_normal p,
+.swagger-wrap .swagger-ui .response-col_status,
+.swagger-wrap .swagger-ui table thead tr td,
+.swagger-wrap .swagger-ui table thead tr th,
+.swagger-wrap .swagger-ui .parameter__name,
+.swagger-wrap .swagger-ui .parameter__type,
+.swagger-wrap .swagger-ui .prop-type,
+.swagger-wrap .swagger-ui .tab li,
+.swagger-wrap .swagger-ui .markdown p,
+.swagger-wrap .swagger-ui .markdown li,
+.swagger-wrap .swagger-ui .renderedMarkdown p,
+.swagger-wrap .swagger-ui .model-title,
+.swagger-wrap .swagger-ui .model,
+.swagger-wrap .swagger-ui section.models h4,
+.swagger-wrap .swagger-ui .response-col_links,
+.swagger-wrap .swagger-ui .info li,
+.swagger-wrap .swagger-ui .info p,
+.swagger-wrap .swagger-ui .info a {
+  color: var(--fg-2) !important;
+}
+
+.swagger-wrap .swagger-ui {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+.swagger-wrap .swagger-ui .info .title small.version-stamp,
+.swagger-wrap .swagger-ui .opblock .opblock-summary-method {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+/* Hide the default Swagger topbar (we provide our own header). */
+.swagger-wrap .swagger-ui .topbar,
+.swagger-wrap .swagger-ui .information-container.wrapper {
+  display: none;
+}
+
+.swagger-wrap .swagger-ui .scheme-container {
+  background: transparent;
+  box-shadow: none;
+  padding: 0 0 12px;
+}
+
+.swagger-wrap .swagger-ui .opblock {
+  background: var(--surface-elevated);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: none;
+  margin: 0 0 10px;
+}
+
+.swagger-wrap .swagger-ui .opblock .opblock-summary {
+  border-color: var(--border);
+}
+
+.swagger-wrap .swagger-ui .opblock.opblock-get {
+  background: color-mix(in oklch, var(--accent) 8%, var(--surface-elevated));
+  border-color: color-mix(in oklch, var(--accent) 35%, var(--border));
+}
+.swagger-wrap .swagger-ui .opblock.opblock-get .opblock-summary-method {
+  background: var(--accent);
+}
+.swagger-wrap .swagger-ui .opblock.opblock-post {
+  background: color-mix(in oklch, var(--success) 8%, var(--surface-elevated));
+  border-color: color-mix(in oklch, var(--success) 35%, var(--border));
+}
+.swagger-wrap .swagger-ui .opblock.opblock-post .opblock-summary-method {
+  background: var(--success);
+}
+.swagger-wrap .swagger-ui .opblock.opblock-put .opblock-summary-method {
+  background: #e8a33d;
+}
+.swagger-wrap .swagger-ui .opblock.opblock-delete {
+  background: color-mix(in oklch, var(--destructive) 8%, var(--surface-elevated));
+  border-color: color-mix(in oklch, var(--destructive) 35%, var(--border));
+}
+.swagger-wrap .swagger-ui .opblock.opblock-delete .opblock-summary-method {
+  background: var(--destructive);
+}
+.swagger-wrap .swagger-ui .opblock.opblock-patch .opblock-summary-method {
+  background: #b79cf2;
+}
+
+.swagger-wrap .swagger-ui .opblock-tag {
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 16px;
+}
+
+.swagger-wrap .swagger-ui .opblock-body,
+.swagger-wrap .swagger-ui .opblock-description-wrapper,
+.swagger-wrap .swagger-ui .responses-inner {
+  background: transparent;
+}
+
+.swagger-wrap .swagger-ui .opblock-body pre.microlight,
+.swagger-wrap .swagger-ui .highlight-code > .microlight {
+  background: var(--surface-input) !important;
+  border: 1px solid var(--border-2);
+  border-radius: 10px;
+}
+.swagger-wrap .swagger-ui .opblock-body pre.microlight code,
+.swagger-wrap .swagger-ui .opblock-body pre.microlight span {
+  color: var(--fg-3) !important;
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.swagger-wrap .swagger-ui table tbody tr td {
+  border-color: var(--border-subtle);
+  color: var(--muted);
+}
+
+.swagger-wrap .swagger-ui .btn {
+  background: var(--surface-2);
+  color: var(--fg-2);
+  border: 1px solid var(--border-input);
+  box-shadow: none;
+  border-radius: 8px;
+}
+.swagger-wrap .swagger-ui .btn:hover {
+  background: var(--surface-hover);
+}
+.swagger-wrap .swagger-ui .btn.execute {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.swagger-wrap .swagger-ui select,
+.swagger-wrap .swagger-ui input[type='text'],
+.swagger-wrap .swagger-ui textarea {
+  background: var(--surface-input);
+  color: var(--fg-2);
+  border: 1px solid var(--border-input);
+  border-radius: 8px;
+}
+
+.swagger-wrap .swagger-ui .model-box,
+.swagger-wrap .swagger-ui section.models,
+.swagger-wrap .swagger-ui section.models.is-open h4 {
+  background: var(--surface-elevated);
+  border-color: var(--border);
+}
+.swagger-wrap .swagger-ui section.models {
+  border-radius: 12px;
+}
+
+.swagger-wrap .swagger-ui .response-col_status {
+  font-family: var(--font-geist-mono), ui-monospace, monospace;
+}
+
+.swagger-wrap .swagger-ui svg:not(:root) {
+  fill: var(--muted-2);
+}
+
+.swagger-wrap .swagger-ui .opblock-section-header {
+  background: var(--surface-2);
+  box-shadow: none;
+}
+.swagger-wrap .swagger-ui .opblock-section-header h4,
+.swagger-wrap .swagger-ui .opblock-section-header label {
+  color: var(--fg-2) !important;
+}
+
+.swagger-wrap .swagger-ui .tab li.active {
+  color: var(--fg) !important;
+}
+
+.swagger-wrap .swagger-ui .copy-to-clipboard {
+  background: var(--surface-2);
+  border-radius: 6px;
+}

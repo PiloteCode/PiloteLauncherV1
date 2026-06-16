@@ -1,0 +1,362 @@
+openapi: 3.1.0
+info:
+  title: Pilote Project — Distribution API
+  version: 1.0.0
+  description: |
+    Public + admin API served by the Pilote Project `web` app (Next.js).
+
+    - **Players** (Electron launcher) use the public read endpoints and the unlock flow.
+      No Microsoft/Mojang auth: profiles are offline. Offline auth only works on servers
+      with `online-mode=false`.
+    - **Admins** use the `/api/admin/*` endpoints, protected by Better Auth session cookies.
+
+    Private instances are never returned by `GET /api/instances`. To access one, the player
+    submits an access code to `POST /api/instances/unlock` and receives a short-lived JWT
+    scoped to that single instance. The manifest and every private file URL require that token.
+  license:
+    name: MIT
+servers:
+  - url: http://localhost:3000
+    description: Local dev
+  - url: https://cdn.pilote.example
+    description: Production distribution host
+tags:
+  - name: instances
+    description: Public distribution endpoints (used by the launcher)
+  - name: files
+    description: Content-addressed file delivery
+  - name: admin
+    description: Admin CRUD (Better Auth session required)
+  - name: updates
+    description: electron-updater generic provider feed
+
+paths:
+  /api/instances:
+    get:
+      tags: [instances]
+      summary: List public instances
+      description: Returns only `visibility=public` instances. Sensitive fields are never included.
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ListInstancesResponse'
+
+  /api/instances/unlock:
+    post:
+      tags: [instances]
+      summary: Unlock a private instance with an access code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UnlockRequest'
+      responses:
+        '200':
+          description: Unlocked — returns a scoped token and the private instance DTO.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UnlockResponse'
+        '401':
+          description: Invalid or already-used code.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ApiError' }
+        '429':
+          description: Too many attempts (rate limited).
+
+  /api/instances/{id}/manifest:
+    get:
+      tags: [instances]
+      summary: Get an instance file manifest
+      description: |
+        Public instances are open. Private instances require the scoped bearer token
+        returned by `/api/instances/unlock`.
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      security:
+        - {}
+        - instanceToken: []
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ManifestResponse' }
+        '401':
+          description: Missing/invalid token for a private instance.
+        '404':
+          description: Instance not found.
+
+  /api/files/{hash}:
+    get:
+      tags: [files]
+      summary: Download a content-addressed file by SHA-1
+      description: |
+        Streams the stored blob whose key is `hash`. Files that belong only to private
+        instances require a valid scoped token (query `?token=` or `Authorization` header).
+      parameters:
+        - name: hash
+          in: path
+          required: true
+          schema: { type: string, pattern: '^[a-f0-9]{40}$' }
+        - name: token
+          in: query
+          required: false
+          schema: { type: string }
+      responses:
+        '200':
+          description: File stream.
+          content:
+            application/octet-stream:
+              schema: { type: string, format: binary }
+        '401':
+          description: Token required for a private file.
+        '404':
+          description: Unknown hash.
+
+  /api/admin/instances:
+    get:
+      tags: [admin]
+      summary: List all instances (admin)
+      security: [{ sessionCookie: [] }]
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ListInstancesResponse' }
+    post:
+      tags: [admin]
+      summary: Create an instance
+      security: [{ sessionCookie: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpsertInstanceRequest' }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Instance' }
+
+  /api/admin/instances/{id}:
+    put:
+      tags: [admin]
+      summary: Update an instance (bumps version)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpsertInstanceRequest' }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [admin]
+      summary: Delete an instance
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Deleted }
+
+  /api/admin/instances/{id}/files:
+    post:
+      tags: [admin]
+      summary: Upload one or more files (drag & drop)
+      description: Multipart upload. Files are hashed (SHA-1), deduped, parsed for mod metadata, and attached. Bumps the instance version.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: target, in: query, required: false, schema: { type: string, enum: [mods, config, resourcepacks, shaderpacks, datapacks, root] } }
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        '200':
+          description: Uploaded
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Instance' }
+
+  /api/admin/instances/{id}/files/{fileId}:
+    patch:
+      tags: [admin]
+      summary: Toggle/move a file (enable/disable, change target). Bumps version.
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: fileId, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Updated }
+    delete:
+      tags: [admin]
+      summary: Remove a file from the instance (bumps version, decrements blob refcount)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+        - { name: fileId, in: path, required: true, schema: { type: string } }
+      responses:
+        '204': { description: Removed }
+
+  /api/admin/instances/{id}/access-code:
+    post:
+      tags: [admin]
+      summary: Generate or rotate the private access code (plaintext returned once)
+      security: [{ sessionCookie: [] }]
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        '200':
+          description: New code (shown once; only the argon2 hash is stored).
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AccessCodeResponse' }
+
+  /api/updates/{channel}/{file}:
+    get:
+      tags: [updates]
+      summary: electron-updater generic provider feed & artifacts
+      description: Serves `latest.yml`, `latest-mac.yml`, `latest-linux.yml` and the installer binaries.
+      parameters:
+        - { name: channel, in: path, required: true, schema: { type: string, enum: [win, mac, linux] } }
+        - { name: file, in: path, required: true, schema: { type: string } }
+      responses:
+        '200': { description: Feed or artifact }
+        '404': { description: Not found }
+
+components:
+  securitySchemes:
+    instanceToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Short-lived JWT scoped to a single private instance.
+    sessionCookie:
+      type: apiKey
+      in: cookie
+      name: better-auth.session_token
+      description: Better Auth admin session cookie.
+  schemas:
+    ModLoader:
+      type: string
+      enum: [vanilla, fabric, forge, neoforge, quilt]
+    FileTarget:
+      type: string
+      enum: [mods, config, resourcepacks, shaderpacks, datapacks, root]
+    InstanceFile:
+      type: object
+      required: [path, target, sha1, sizeBytes, downloadUrl, enabled]
+      properties:
+        path: { type: string }
+        target: { $ref: '#/components/schemas/FileTarget' }
+        sha1: { type: string, pattern: '^[a-f0-9]{40}$' }
+        sizeBytes: { type: integer }
+        downloadUrl: { type: string }
+        enabled: { type: boolean }
+    Instance:
+      type: object
+      required: [id, name, mcVersion, loader, visibility, version, updatedAt]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        cover: { type: string }
+        description: { type: string }
+        changelog: { type: string }
+        mcVersion: { type: string }
+        loader: { $ref: '#/components/schemas/ModLoader' }
+        loaderVersion: { type: string }
+        recommendedRamMb: { type: integer }
+        visibility: { type: string, enum: [public, private] }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/InstanceFile' }
+        version: { type: integer }
+        updatedAt: { type: string }
+    InstanceManifest:
+      type: object
+      required: [id, name, mcVersion, loader, recommendedRamMb, version, files]
+      properties:
+        id: { type: string }
+        name: { type: string }
+        mcVersion: { type: string }
+        loader: { $ref: '#/components/schemas/ModLoader' }
+        loaderVersion: { type: string }
+        recommendedRamMb: { type: integer }
+        version: { type: integer }
+        files:
+          type: array
+          items: { $ref: '#/components/schemas/InstanceFile' }
+    ListInstancesResponse:
+      type: object
+      required: [instances]
+      properties:
+        instances:
+          type: array
+          items: { $ref: '#/components/schemas/Instance' }
+    UnlockRequest:
+      type: object
+      required: [code]
+      properties:
+        code: { type: string, minLength: 1, maxLength: 128 }
+    UnlockResponse:
+      type: object
+      required: [token, expiresAt, instance]
+      properties:
+        token: { type: string }
+        expiresAt: { type: integer }
+        instance: { $ref: '#/components/schemas/Instance' }
+    ManifestResponse:
+      type: object
+      required: [manifest]
+      properties:
+        manifest: { $ref: '#/components/schemas/InstanceManifest' }
+    UpsertInstanceRequest:
+      type: object
+      required: [name, mcVersion, loader, visibility]
+      properties:
+        name: { type: string }
+        description: { type: string }
+        changelog: { type: string }
+        mcVersion: { type: string }
+        loader: { $ref: '#/components/schemas/ModLoader' }
+        loaderVersion: { type: string }
+        recommendedRamMb: { type: integer }
+        visibility: { type: string, enum: [public, private] }
+        cover: { type: string }
+    AccessCodeResponse:
+      type: object
+      required: [instanceId, code]
+      properties:
+        instanceId: { type: string }
+        code: { type: string }
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code: { type: string }
+            message: { type: string }
+            details: {}

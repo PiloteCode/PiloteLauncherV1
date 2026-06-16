@@ -1,0 +1,49 @@
+{
+  "name": "pilote-project",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pilote Project — launcher Minecraft Java custom (Electron + Vue) avec instances publiques/privées, profils offline, auto-update et sync par hash.",
+  "license": "MIT",
+  "author": "PiloteCode",
+  "type": "module",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  },
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean && rimraf node_modules",
+    "dev:client": "pnpm --filter @pilote/client dev",
+    "dev:web": "pnpm --filter @pilote/web dev",
+    "build:client": "pnpm --filter @pilote/client build",
+    "build:web": "pnpm --filter @pilote/web build",
+    "db:generate": "pnpm --filter @pilote/web db:generate",
+    "db:migrate": "pnpm --filter @pilote/web db:migrate",
+    "db:seed": "pnpm --filter @pilote/web db:seed"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "prettier": "^3.4.2",
+    "rimraf": "^6.0.1",
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "electron",
+      "esbuild",
+      "@prisma/client",
+      "@prisma/engines",
+      "prisma",
+      "sharp",
+      "@node-rs/argon2",
+      "vue-demi",
+      "core-js-pure",
+      "unrs-resolver"
+    ]
+  }
+}

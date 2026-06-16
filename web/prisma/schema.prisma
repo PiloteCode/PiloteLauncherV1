@@ -1,0 +1,123 @@
+// Pilote Project — distribution backend schema.
+// Dev: SQLite (zero-setup on the user's machine). Prod: switch `provider` to "postgresql"
+// and point DATABASE_URL at your Postgres instance (see .env.example). No Json columns are
+// used so the schema is portable between both providers.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Domain ────────────────────────────────────────────────────────────────────
+
+model Instance {
+  id               String   @id @default(cuid())
+  name             String
+  cover            String   @default("")
+  description      String   @default("")
+  changelog        String   @default("")
+  mcVersion        String
+  loader           String // 'vanilla' | 'fabric' | 'forge' | 'neoforge' | 'quilt'
+  loaderVersion    String?
+  recommendedRamMb Int      @default(4096)
+  visibility       String   @default("public") // 'public' | 'private'
+  // argon2 hash of the access code; only set when visibility = 'private'.
+  accessCodeHash   String?
+  // Bumped on every mutation; the client compares this to trigger a sync.
+  version          Int      @default(1)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  files InstanceFile[]
+
+  @@index([visibility])
+}
+
+model InstanceFile {
+  id          String  @id @default(cuid())
+  instanceId  String
+  instance    Instance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  // path relative to the target dir
+  path        String
+  target      String // 'mods' | 'config' | 'resourcepacks' | 'shaderpacks' | 'datapacks' | 'root'
+  sha1        String // lowercase hex; also the content-addressed storage key
+  sizeBytes   Int
+  enabled     Boolean @default(true)
+  // JSON-encoded ModMetadata (nullable). Stored as string for sqlite/postgres portability.
+  modMetadata String?
+  createdAt   DateTime @default(now())
+
+  @@index([instanceId])
+  @@index([sha1])
+}
+
+// Content-addressed blob registry for dedup across instances. The bytes live on disk at
+// storage/{ab}/{sha1} (or S3); this row tracks refcount + size for GC.
+model StoredFile {
+  sha1      String   @id
+  sizeBytes Int
+  refCount  Int      @default(1)
+  createdAt DateTime @default(now())
+}
+
+// ── Better Auth (admin only) ────────────────────────────────────────────────────
+// These models match Better Auth's expected schema. Players never authenticate here.
+
+model User {
+  id            String    @id
+  name          String
+  email         String    @unique
+  emailVerified Boolean   @default(false)
+  image         String?
+  role          String    @default("admin")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  accounts      Account[]
+}
+
+model Session {
+  id        String   @id
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model Account {
+  id                    String    @id
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accountId             String
+  providerId            String
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([userId])
+}
+
+model Verification {
+  id         String   @id
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}

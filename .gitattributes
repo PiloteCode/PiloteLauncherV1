@@ -1,0 +1,23 @@
+# Normalize line endings: LF in the repo for everything text, so start.sh and other
+# shell scripts work on Linux/macOS even when authored on Windows.
+* text=auto eol=lf
+
+*.sh text eol=lf
+*.ts text eol=lf
+*.tsx text eol=lf
+*.vue text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.md text eol=lf
+
+# Binary assets — never normalize.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
+*.gz binary
+*.zip binary
+*.jar binary

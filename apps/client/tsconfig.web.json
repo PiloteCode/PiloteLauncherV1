@@ -1,0 +1,23 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "composite": true,
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ES2023", "DOM", "DOM.Iterable"],
+    "jsx": "preserve",
+    "types": ["node"],
+    "outDir": "out/renderer-types",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@renderer/*": ["src/*"]
+    },
+    "noUnusedLocals": false
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue",
+    "electron/preload/*.d.ts"
+  ]
+}

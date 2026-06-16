@@ -1,0 +1,43 @@
+appId: com.pilotecode.piloteproject
+productName: Pilote Project
+copyright: Copyright © 2026 PiloteCode
+directories:
+  output: release
+  buildResources: build
+files:
+  - out/**
+  - "!**/*.map"
+asar: true
+
+# Auto-update feed. By default we publish GitHub Releases; the generic self-host provider
+# (your web app's /api/updates) is documented in README and can be swapped in here.
+publish:
+  - provider: github
+    owner: PiloteCode
+    repo: PiloteLauncherV1
+    releaseType: release
+
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  artifactName: ${productName}-${version}-setup.${ext}
+nsis:
+  oneClick: false
+  perMachine: false
+  allowToChangeInstallationDirectory: true
+  deleteAppDataOnUninstall: false
+
+mac:
+  target:
+    - target: dmg
+      arch: [x64, arm64]
+  category: public.app-category.games
+  artifactName: ${productName}-${version}-${arch}.${ext}
+
+linux:
+  target:
+    - AppImage
+    - deb
+  category: Game
+  artifactName: ${productName}-${version}.${ext}

@@ -1,0 +1,61 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+out/
+build/
+.next/
+.turbo/
+*.tsbuildinfo
+release/
+dist-electron/
+
+# Environment — NEVER commit real secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.development
+!.env.example
+
+# Database
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+prisma/dev.db*
+web/prisma/*.db*
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+pnpm-debug.log*
+
+# Storage (content-addressed uploaded files)
+web/storage/
+storage/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.swp
+
+# Auth / secrets
+*.pem
+*.key
+auth-secret.txt
+
+# Test / coverage
+coverage/
+.nyc_output/
+
+# Misc
+*.local
+tmp/
+.cache/

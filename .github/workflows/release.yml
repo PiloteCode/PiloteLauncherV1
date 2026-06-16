@@ -1,0 +1,45 @@
+name: Release
+
+# Builds the Electron launcher for Windows/macOS/Linux and publishes installers +
+# the electron-updater feed (latest*.yml) to a GitHub Release when a vX.Y.Z tag is pushed.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build workspace packages
+        run: pnpm --filter @pilote/types --filter @pilote/core build
+
+      - name: Build & publish launcher
+        working-directory: apps/client
+        run: pnpm run publish
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # macOS signing/notarization secrets are optional; left unset = unsigned dev build.
+          CSC_IDENTITY_AUTO_DISCOVERY: false
