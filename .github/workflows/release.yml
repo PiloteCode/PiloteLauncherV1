@@ -1,7 +1,10 @@
 name: Release
 
-# Builds the Electron launcher for Windows/macOS/Linux and publishes installers +
-# the electron-updater feed (latest*.yml) to a GitHub Release when a vX.Y.Z tag is pushed.
+# Builds the Electron launcher and publishes the installer + the electron-updater feed
+# (latest.yml) to a GitHub Release when a vX.Y.Z tag is pushed.
+#
+# v1.0.0 ships the Windows build (the stated primary target). To also publish macOS/Linux,
+# add `macos-latest` and `ubuntu-latest` back to the matrix below.
 on:
   push:
     tags:
@@ -16,14 +19,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [windows-latest, macos-latest, ubuntu-latest]
+        os: [windows-latest]
+        # os: [windows-latest, macos-latest, ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
 
+      # pnpm version is read from package.json "packageManager" — do NOT also pass `version`.
       - uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - uses: actions/setup-node@v4
         with:
@@ -41,5 +44,5 @@ jobs:
         run: pnpm run publish
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          # macOS signing/notarization secrets are optional; left unset = unsigned dev build.
+          # macOS signing/notarization secrets are optional; left unset = unsigned build.
           CSC_IDENTITY_AUTO_DISCOVERY: false
