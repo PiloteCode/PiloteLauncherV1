@@ -79,6 +79,15 @@ function createWindow(): BrowserWindow {
     }
   });
 
+  // Allow opening DevTools (F12 / Ctrl+Shift+I) — handy with the hidden "jeveuxdev" dev mode.
+  win.webContents.on('before-input-event', (_e, input) => {
+    if (input.type !== 'keyDown') return;
+    const mod = input.control || input.meta;
+    if (input.key === 'F12' || (mod && input.shift && input.key.toLowerCase() === 'i')) {
+      win.webContents.toggleDevTools();
+    }
+  });
+
   const devUrl = rendererDevUrl();
   if (devUrl) {
     void win.loadURL(devUrl);

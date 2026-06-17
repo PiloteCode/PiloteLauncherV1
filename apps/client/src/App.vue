@@ -5,11 +5,13 @@ import { toast } from 'vue-sonner';
 import TitleBar from '@/components/TitleBar.vue';
 import DownloadOverlay from '@/components/DownloadOverlay.vue';
 import CodeModal from '@/components/CodeModal.vue';
+import DebugPanel from '@/components/DebugPanel.vue';
 import Toaster from '@/components/Toaster.vue';
 import { useDownloadsStore } from '@/stores/downloads';
 import { useInstancesStore } from '@/stores/instances';
 import { useSettingsStore } from '@/stores/settings';
 import { useModulesStore } from '@/stores/modules';
+import { useDebugStore } from '@/stores/debug';
 import { getBridge, hasBridge } from '@/lib/bridge';
 
 const route = useRoute();
@@ -18,6 +20,7 @@ const downloads = useDownloadsStore();
 const instances = useInstancesStore();
 const settings = useSettingsStore();
 const modules = useModulesStore();
+const debug = useDebugStore();
 
 let unErr: (() => void) | null = null;
 let unExit: (() => void) | null = null;
@@ -38,6 +41,9 @@ const ERROR_LABEL: Record<string, string> = {
 onMounted(() => {
   // Apply persisted theme as early as possible (defaults to dark).
   void settings.load();
+
+  // Hidden dev mode: type "jeveuxdev" within 10s to unlock the debug panel.
+  debug.arm();
 
   if (!hasBridge()) return;
   const bridge = getBridge();
@@ -96,6 +102,7 @@ onBeforeUnmount(() => {
   downloads.dispose();
   instances.dispose();
   modules.dispose();
+  debug.disarm();
 });
 </script>
 
@@ -113,6 +120,7 @@ onBeforeUnmount(() => {
 
     <DownloadOverlay />
     <CodeModal />
+    <DebugPanel />
     <Toaster />
   </div>
 </template>
