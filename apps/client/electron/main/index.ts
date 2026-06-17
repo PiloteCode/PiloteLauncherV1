@@ -1,5 +1,6 @@
 import { join } from 'node:path';
 import { app, BrowserWindow, shell, session } from 'electron';
+import icon from '../../resources/icon.png?asset';
 import { registerIpc } from '../ipc/index.js';
 import { initLogger, log } from './logger.js';
 import { initUpdater, maybeAutoCheck } from './updater.js';
@@ -31,6 +32,7 @@ function createWindow(): BrowserWindow {
     titleBarStyle: 'hidden',
     backgroundColor: '#0a0a0b',
     autoHideMenuBar: true,
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,

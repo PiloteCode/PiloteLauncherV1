@@ -12,6 +12,11 @@ build/
 release/
 dist-electron/
 
+# The launcher's electron-builder resources (app icons) are source files, not output —
+# keep them even though `build/` is ignored above.
+!apps/client/build/
+!apps/client/build/**
+
 # Environment — NEVER commit real secrets
 .env
 .env.local
