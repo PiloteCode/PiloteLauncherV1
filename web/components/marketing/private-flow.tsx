@@ -8,26 +8,26 @@ const STEPS = [
   {
     n: '01',
     icon: KeyRound,
-    title: 'Vous générez un code',
-    body: 'Dans l’admin, vous activez la visibilité privée et générez un code d’accès. Seul son hash argon2 est stocké — le code en clair ne s’affiche qu’une fois.',
+    title: 'Tu génères un code',
+    body: 'Dans l’admin, tu passes l’instance en privé et tu génères un code. Il ne s’affiche qu’une seule fois — ensuite il est stocké chiffré, impossible à relire.',
   },
   {
     n: '02',
     icon: Send,
-    title: 'Le joueur déverrouille',
-    body: 'Le joueur saisit le code dans le launcher. POST /api/instances/unlock vérifie le hash et renvoie un JWT à courte durée de vie, lié à cette seule instance.',
+    title: 'Tu le donnes à qui tu veux',
+    body: 'Le joueur colle le code dans son launcher. S’il est bon, l’instance apparaît chez lui — et seulement chez lui.',
   },
   {
     n: '03',
     icon: ShieldCheck,
-    title: 'Le manifeste se débloque',
-    body: 'Le manifeste et chaque URL de fichier privé exigent ce jeton. Aucune instance privée n’apparaît jamais dans la liste publique.',
+    title: 'Personne d’autre ne la voit',
+    body: 'L’instance ne sort jamais dans la liste publique, et ses fichiers ne se téléchargent qu’une fois le code validé. Pas de lien qui fuite.',
   },
   {
     n: '04',
     icon: DownloadCloud,
-    title: 'Sync & lancement',
-    body: 'Le launcher télécharge uniquement les fichiers manquants par hash, installe le loader et le bon Java, puis lance le jeu.',
+    title: 'Et ça lance',
+    body: 'Le launcher récupère juste les fichiers qui manquent, installe le loader et le bon Java, et démarre le jeu.',
   },
 ];
 
@@ -44,12 +44,11 @@ export function PrivateFlow() {
               Instances privées
             </p>
             <h2 className="mt-3 text-[28px] font-semibold tracking-tight text-fg sm:text-[34px]">
-              Un code. Un jeton. Zéro fuite.
+              Privé, et ça le reste.
             </h2>
             <p className="mt-4 max-w-md text-[15px] leading-relaxed text-muted">
-              Le flux privé est pensé pour les communautés fermées : serveurs entre amis,
-              bêtas, modpacks payants. Le code n’ouvre l’accès qu’à une instance, et le jeton
-              expire vite.
+              Pratique pour les serveurs entre potes, les bêtas, ou un modpack que tu veux
+              garder fermé. Un code n’ouvre qu’une seule instance, à qui tu l’as donné.
             </p>
 
             <div className="mt-6 rounded-card border border-border bg-surface p-4 font-mono text-[12px] leading-relaxed text-muted-2">

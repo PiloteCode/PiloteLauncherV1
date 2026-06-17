@@ -35,7 +35,7 @@ const FEATURES: Feature[] = [
   {
     icon: RefreshCw,
     title: 'Mises à jour automatiques',
-    body: 'Le launcher se met à jour seul via electron-updater. Les instances bumpent leur version côté serveur, le client se resynchronise.',
+    body: 'Le launcher se met à jour tout seul. Et dès que tu modifies une instance, les joueurs récupèrent les nouveaux fichiers au prochain lancement.',
   },
   {
     icon: UserRound,
@@ -49,8 +49,8 @@ const FEATURES: Feature[] = [
   },
   {
     icon: Lock,
-    title: 'Livraison sécurisée',
-    body: 'Les fichiers privés ne sont servis qu’avec un jeton JWT à courte durée de vie, lié à une seule instance.',
+    title: 'Accès privé verrouillé',
+    body: 'Les fichiers d’une instance privée ne sortent jamais sans le bon code. Pas de lien public qui traîne dans la nature.',
   },
 ];
 

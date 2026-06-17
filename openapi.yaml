@@ -1,34 +1,35 @@
 openapi: 3.1.0
 info:
-  title: Pilote Project — Distribution API
+  title: Pilote Project API
   version: 1.0.0
   description: |
-    Public + admin API served by the Pilote Project `web` app (Next.js).
+    L'API derrière le launcher.
 
-    - **Players** (Electron launcher) use the public read endpoints and the unlock flow.
-      No Microsoft/Mojang auth: profiles are offline. Offline auth only works on servers
-      with `online-mode=false`.
-    - **Admins** use the `/api/admin/*` endpoints, protected by Better Auth session cookies.
+    Le launcher s'en sert pour lister les instances publiques, débloquer une instance privée
+    avec un code, lire le manifeste et télécharger les fichiers. Les profils sont hors-ligne,
+    donc ça ne marche que sur des serveurs en `online-mode=false`.
 
-    Private instances are never returned by `GET /api/instances`. To access one, the player
-    submits an access code to `POST /api/instances/unlock` and receives a short-lived JWT
-    scoped to that single instance. The manifest and every private file URL require that token.
+    Une instance privée n'apparaît jamais dans `GET /api/instances`. On envoie le code à
+    `/api/instances/unlock`, on récupère un token valable un moment pour cette instance-là,
+    et ce token est exigé pour son manifeste et ses fichiers.
+
+    Tout ce qui est sous `/api/admin` sert à gérer les instances et demande d'être connecté.
   license:
     name: MIT
 servers:
+  - url: https://piloteproject.pilotecode.com
+    description: Prod
   - url: http://localhost:3000
-    description: Local dev
-  - url: https://cdn.pilote.example
-    description: Production distribution host
+    description: Dev local
 tags:
   - name: instances
-    description: Public distribution endpoints (used by the launcher)
+    description: Ce que le launcher lit
   - name: files
-    description: Content-addressed file delivery
+    description: Téléchargement des fichiers (adressés par leur hash SHA-1)
   - name: admin
-    description: Admin CRUD (Better Auth session required)
+    description: Gestion des instances — connexion requise
   - name: updates
-    description: electron-updater generic provider feed
+    description: Flux de mise à jour du launcher
 
 paths:
   /api/instances:

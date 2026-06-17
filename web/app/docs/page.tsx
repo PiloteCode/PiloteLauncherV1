@@ -41,10 +41,11 @@ export default function DocsPage() {
 
       <main className="mx-auto max-w-5xl px-5 py-10">
         <div className="mb-8">
-          <h1 className="text-[26px] font-semibold tracking-tight">Documentation de l’API</h1>
+          <h1 className="text-[26px] font-semibold tracking-tight">L’API</h1>
           <p className="mt-2 text-[14px] leading-relaxed text-muted">
-            Contrat REST de distribution Pilote Project. Endpoints publics utilisés par le
-            launcher, endpoints admin protégés par session Better Auth.
+            Ce que le launcher appelle pour lister les instances et télécharger les fichiers.
+            Les routes sous <code className="font-mono text-[13px] text-fg-3">/admin</code> demandent
+            d’être connecté.
           </p>
         </div>
         <div className="swagger-wrap rounded-card border border-border bg-surface p-1">
