@@ -39,39 +39,43 @@ green "▶ Pilote Project web — booting (NODE_ENV=$NODE_ENV, PORT=$PORT)"
 
 # 2. Toolchain check -----------------------------------------------------------
 command -v node >/dev/null 2>&1 || { red "✗ Node.js is required"; exit 1; }
-if command -v pnpm >/dev/null 2>&1; then PKG=pnpm; else PKG=npm; fi
-green "▶ Using package manager: $PKG"
+# Ensure pnpm is available. Container images (e.g. Pterodactyl/yolks Node) ship Node +
+# corepack but usually not pnpm, and npm cannot resolve this repo's pnpm workspaces.
+if ! command -v pnpm >/dev/null 2>&1; then
+  yellow "▶ pnpm not found — provisioning via corepack…"
+  corepack enable >/dev/null 2>&1 || true
+  corepack prepare pnpm@10.33.0 --activate >/dev/null 2>&1 || npm install -g pnpm@10 >/dev/null 2>&1 || true
+fi
+command -v pnpm >/dev/null 2>&1 || { red "✗ pnpm is required and could not be provisioned"; exit 1; }
+green "▶ Using pnpm $(pnpm --version)"
 
-# 3. Dependencies (install from the monorepo root so workspaces resolve) -------
+# 3. Dependencies — install only the web app + its workspace deps (skip the Electron client).
 if [ "${SKIP_INSTALL:-0}" != "1" ]; then
-  green "▶ Installing dependencies…"
-  if [ "$PKG" = "pnpm" ]; then
-    (cd .. && pnpm install --frozen-lockfile || pnpm install)
-  else
-    npm install
-  fi
+  green "▶ Installing dependencies (web + workspace deps)…"
+  (cd .. && pnpm install --filter "@pilote/web..." --frozen-lockfile) \
+    || (cd .. && pnpm install --filter "@pilote/web...")
 fi
 
 # 4. Database ------------------------------------------------------------------
 green "▶ Generating Prisma client…"
-$PKG run db:generate
+pnpm run db:generate
 
 green "▶ Applying database migrations…"
 # `migrate deploy` is a no-op when there are no pending migrations.
-$PKG exec prisma migrate deploy || {
+pnpm exec prisma migrate deploy || {
   yellow "⚠ No migrations found — pushing schema directly (dev fallback)."
-  $PKG exec prisma db push
+  pnpm exec prisma db push
 }
 
 green "▶ Seeding first admin (idempotent)…"
-$PKG run db:seed || yellow "⚠ Seed skipped or already applied."
+pnpm run db:seed || yellow "⚠ Seed skipped or already applied."
 
 # 5. Build ---------------------------------------------------------------------
 if [ "${SKIP_BUILD:-0}" != "1" ]; then
   green "▶ Building Next.js…"
-  $PKG run build
+  pnpm run build
 fi
 
 # 6. Serve ---------------------------------------------------------------------
 green "✓ Starting Pilote Project web on port $PORT"
-exec $PKG run start
+exec pnpm run start
