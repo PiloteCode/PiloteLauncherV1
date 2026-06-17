@@ -118,7 +118,7 @@ function LoginForm() {
           </form>
 
           <p className="mt-5 text-center font-mono text-[11px] text-muted-3">
-            Better Auth · session protégée
+            Accès réservé à l’équipe
           </p>
         </div>
       </div>

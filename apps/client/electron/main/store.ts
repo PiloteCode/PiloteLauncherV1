@@ -30,9 +30,15 @@ interface StoreShape {
 
 let conf: Conf<StoreShape> | undefined;
 
+/** Production backend the shipped launcher talks to. Dev builds hit localhost. */
+const PROD_API_BASE_URL = 'https://piloteproject.pilotecode.com';
+
 function defaultSettings(): Settings {
   const userData = app.getPath('userData');
-  const apiBaseUrl = process.env.PILOTE_API_BASE_URL?.trim() || 'http://localhost:3000';
+  // A packaged build points at the live backend; in dev we hit localhost (env can override either).
+  const apiBaseUrl =
+    process.env.PILOTE_API_BASE_URL?.trim() ||
+    (app.isPackaged ? PROD_API_BASE_URL : 'http://localhost:3000');
   // Parse through the schema so every defaulted field is populated.
   return SettingsSchema.parse({
     instancesDir: join(userData, 'instances'),

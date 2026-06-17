@@ -255,7 +255,7 @@ export function FileManager({
           <span className="font-mono text-muted-2">{TARGET_LABEL[uploadTarget]}</span>
         </p>
         <p className="font-mono text-[11px] text-muted-3">
-          hachés en SHA-1, dédupliqués et analysés automatiquement
+          vérifiés, dédupliqués et analysés automatiquement
         </p>
       </div>
 

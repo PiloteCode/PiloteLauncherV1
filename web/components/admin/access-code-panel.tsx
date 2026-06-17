@@ -62,8 +62,8 @@ export function AccessCodePanel({
         <div className="min-w-0 flex-1">
           <h3 className="text-[14.5px] font-semibold text-fg-1">Code d’accès</h3>
           <p className="mt-1 text-[12.5px] leading-relaxed text-muted">
-            Cette instance est privée. Générez un code à transmettre aux joueurs. Seul son
-            hash argon2 est stocké — le code en clair n’est affiché qu’une seule fois.
+            Cette instance est privée. Générez un code à transmettre aux joueurs. Il est stocké
+            chiffré — le code en clair n’est affiché qu’une seule fois, notez-le bien.
           </p>
 
           {code ? (

@@ -110,10 +110,10 @@ export default function DownloadPage() {
           </div>
 
           <div className="rounded-card border border-border bg-surface p-6">
-            <h3 className="text-[15px] font-semibold text-fg-1">Canal de mise à jour</h3>
+            <h3 className="text-[15px] font-semibold text-fg-1">Mises à jour</h3>
             <p className="mt-2 text-[13px] leading-relaxed text-muted">
-              Le launcher interroge le flux electron-updater servi par cette instance. Aucune
-              action requise — les mises à jour s’appliquent au démarrage.
+              Le launcher vérifie tout seul s’il y a une nouvelle version. Rien à faire —
+              ça s’installe au démarrage.
             </p>
             <ul className="mt-4 space-y-1.5">
               {PLATFORMS.map((p) => (

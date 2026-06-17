@@ -29,8 +29,8 @@ const FEATURES: Feature[] = [
   },
   {
     icon: FileCheck2,
-    title: 'Synchronisation par hash',
-    body: 'Chaque fichier est adressé par son SHA-1. Le launcher ne télécharge que ce qui a changé et supprime ce qui n’est plus au manifeste.',
+    title: 'Seulement ce qui a changé',
+    body: 'Le launcher compare ce que le joueur a déjà avec la version en ligne et ne récupère que les fichiers modifiés. Pas de re-téléchargement complet à chaque mise à jour.',
   },
   {
     icon: RefreshCw,
