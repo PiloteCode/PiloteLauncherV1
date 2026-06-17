@@ -5,9 +5,11 @@ import obfuscator from 'vite-plugin-javascript-obfuscator';
 
 /**
  * The shipped renderer bundle is obfuscated on production builds only (dev stays readable
- * for HMR/debugging). Settings are deliberately moderate — identifier renaming + a base64
- * string array — to make the code hard to read without the aggressive transforms
- * (control-flow flattening, self-defending) that tend to break Vue at runtime.
+ * for HMR/debugging). It renames identifiers + compacts, but deliberately keeps
+ * `stringArray` OFF: encoding string literals rewrites dynamic-import specifiers
+ * (`import('@/views/...')`) into function calls, which stops Vite from resolving the `@`
+ * alias and breaks routing at runtime. Identifier renaming alone keeps the code unreadable
+ * without touching imports.
  */
 const obfuscate = () =>
   obfuscator({
@@ -16,9 +18,7 @@ const obfuscate = () =>
       compact: true,
       simplify: true,
       identifierNamesGenerator: 'hexadecimal',
-      stringArray: true,
-      stringArrayThreshold: 0.75,
-      stringArrayEncoding: ['base64'],
+      stringArray: false,
       controlFlowFlattening: false,
       deadCodeInjection: false,
       selfDefending: false,
@@ -52,6 +52,10 @@ export default defineConfig(({ command }) => {
       build: {
         rollupOptions: {
           input: { index: resolve('electron/preload/index.ts') },
+          // Force a CommonJS `index.js` (the main process loads `../preload/index.js`).
+          // Without this, a `"type": "module"` package makes electron-vite emit `index.mjs`,
+          // which the preload loader can't find.
+          output: { format: 'cjs', entryFileNames: 'index.js', inlineDynamicImports: true },
         },
       },
     },
