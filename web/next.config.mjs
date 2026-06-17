@@ -9,6 +9,11 @@ const nextConfig = {
   // Large file uploads handled in route handlers (Node runtime).
   experimental: {
     serverActions: { bodySizeLimit: '256mb' },
+    // Cap build-time worker processes. On big multi-core hosts with a container PID limit
+    // (e.g. Pterodactyl/Wings), `next build` otherwise spawns one worker per core and dies
+    // with "spawn EAGAIN" while collecting page data / generating static pages.
+    cpus: 1,
+    workerThreads: false,
   },
   // @pilote/types ships source-first with explicit ".js" import specifiers (NodeNext style).
   // Teach webpack to resolve those to the real .ts files so no prebuild of the package is
