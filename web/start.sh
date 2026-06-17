@@ -43,6 +43,8 @@ command -v node >/dev/null 2>&1 || { red "✗ Node.js is required"; exit 1; }
 # corepack but usually not pnpm, and npm cannot resolve this repo's pnpm workspaces.
 if ! command -v pnpm >/dev/null 2>&1; then
   yellow "▶ pnpm not found — provisioning via corepack…"
+  # Don't block on corepack's interactive "about to download" confirmation in containers.
+  export COREPACK_ENABLE_DOWNLOAD_PROMPT=0
   corepack enable >/dev/null 2>&1 || true
   corepack prepare pnpm@10.33.0 --activate >/dev/null 2>&1 || npm install -g pnpm@10 >/dev/null 2>&1 || true
 fi
