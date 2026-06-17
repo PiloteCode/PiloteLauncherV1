@@ -1,6 +1,6 @@
 {
   "name": "@pilote/client",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Pilote Project — Minecraft Java custom launcher (Electron + Vue 3).",
   "main": "./out/main/index.js",

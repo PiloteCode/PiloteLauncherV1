@@ -32,7 +32,9 @@ export function initUpdater(): void {
   if (wired) return;
   wired = true;
 
-  autoUpdater.autoDownload = false;
+  // Fully automatic: silently download new versions and install them on the next quit.
+  // The renderer still gets status events (and shows a "ready, installs on restart" toast).
+  autoUpdater.autoDownload = true;
   autoUpdater.autoInstallOnAppQuit = true;
   autoUpdater.logger = log;
 
