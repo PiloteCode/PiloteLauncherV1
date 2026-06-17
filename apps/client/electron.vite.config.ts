@@ -52,10 +52,10 @@ export default defineConfig(({ command }) => {
       build: {
         rollupOptions: {
           input: { index: resolve('electron/preload/index.ts') },
-          // Force a CommonJS `index.js` (the main process loads `../preload/index.js`).
-          // Without this, a `"type": "module"` package makes electron-vite emit `index.mjs`,
-          // which the preload loader can't find.
-          output: { format: 'cjs', entryFileNames: 'index.js', inlineDynamicImports: true },
+          // Emit a CommonJS `index.cjs`. The package is `"type": "module"`, so a `.js`
+          // preload is treated as ESM and Electron's `require()`-based preload loader rejects
+          // it ("require() of ES Module"). The `.cjs` extension forces CommonJS unambiguously.
+          output: { format: 'cjs', entryFileNames: 'index.cjs', inlineDynamicImports: true },
         },
       },
     },

@@ -38,7 +38,7 @@ function createWindow(): BrowserWindow {
     autoHideMenuBar: true,
     icon,
     webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
+      preload: join(__dirname, '../preload/index.cjs'),
       contextIsolation: true,
       nodeIntegration: false,
       // sandbox must be false so the preload can `require` Node built-ins for the bridge.
