@@ -7,9 +7,9 @@ import { toast } from 'vue-sonner';
 import type { MojangLookup } from '@pilote/types';
 import { MINECRAFT_NAME_REGEX } from '@pilote/types';
 import Logo from '@/components/Logo.vue';
+import ProfileAvatar from '@/components/ProfileAvatar.vue';
 import { Button, Input } from '@/components/ui';
 import { useProfilesStore } from '@/stores/profiles';
-import { avatarColor, initials } from '@/lib/cover';
 
 const router = useRouter();
 const profiles = useProfilesStore();
@@ -106,21 +106,18 @@ onBeforeUnmount(() => {
 
         <!-- live preview card -->
         <div class="mt-5 flex items-center gap-3.5 rounded-[14px] border border-border bg-surface-elevated p-3.5">
-          <div class="relative h-14 w-14 shrink-0 overflow-hidden rounded-[12px]">
-            <img
-              v-if="preview?.skinUrl"
-              :src="preview.skinUrl"
-              alt=""
-              class="h-full w-full object-cover [image-rendering:pixelated]"
-            />
-            <div
-              v-else
-              class="flex h-full w-full items-center justify-center text-[18px] font-semibold text-white"
-              :style="{ background: validName ? avatarColor(name) : 'var(--surface-3)' }"
-            >
-              <UserRound v-if="!validName" class="h-6 w-6 text-muted-2" />
-              <span v-else>{{ initials(name) }}</span>
-            </div>
+          <ProfileAvatar
+            v-if="validName"
+            :name="name"
+            :uuid="preview?.uuid"
+            :size="56"
+            class="h-14 w-14 shrink-0 rounded-[12px] text-[18px]"
+          />
+          <div
+            v-else
+            class="flex h-14 w-14 shrink-0 items-center justify-center rounded-[12px] bg-surface-3 text-muted-2"
+          >
+            <UserRound class="h-6 w-6" />
           </div>
 
           <div class="min-w-0 flex-1">

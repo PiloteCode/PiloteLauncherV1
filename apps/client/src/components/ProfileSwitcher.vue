@@ -4,7 +4,7 @@ import { Check, ChevronsUpDown, Plus, UserRound } from 'lucide-vue-next';
 import { storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
 import { useProfilesStore } from '@/stores/profiles';
-import { avatarColor, initials } from '@/lib/cover';
+import ProfileAvatar from '@/components/ProfileAvatar.vue';
 import {
   DropdownMenu,
   DropdownMenuTrigger,
@@ -46,13 +46,13 @@ function addProfile(): void {
         type="button"
         class="flex w-full items-center gap-2.5 rounded-[11px] border border-border-2 bg-surface-2 px-2.5 py-2 text-left transition-colors hover:border-border-hover hover:bg-surface-3 focus-ring"
       >
-        <span
+        <ProfileAvatar
           v-if="active"
-          class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] text-[12px] font-semibold text-white"
-          :style="{ background: avatarColor(active.name) }"
-        >
-          {{ initials(active.name) }}
-        </span>
+          :name="active.name"
+          :uuid="active.uuid"
+          :size="32"
+          class="h-8 w-8 shrink-0 rounded-[9px] text-[12px]"
+        />
         <span
           v-else
           class="flex h-8 w-8 shrink-0 items-center justify-center rounded-[9px] bg-surface-3 text-muted-2"
@@ -74,12 +74,12 @@ function addProfile(): void {
         :key="p.id"
         @select="select(p.id)"
       >
-        <span
-          class="flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] text-[11px] font-semibold text-white"
-          :style="{ background: avatarColor(p.name) }"
-        >
-          {{ initials(p.name) }}
-        </span>
+        <ProfileAvatar
+          :name="p.name"
+          :uuid="p.uuid"
+          :size="28"
+          class="h-7 w-7 shrink-0 rounded-[8px] text-[11px]"
+        />
         <span class="min-w-0 flex-1">
           <span class="block truncate text-[13px] text-fg-1">{{ p.name }}</span>
           <span class="block truncate font-mono text-[10px] text-muted-3">
