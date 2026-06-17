@@ -2,7 +2,6 @@ import electronUpdater from 'electron-updater';
 import { IPC } from '@pilote/types';
 import { broadcast } from './window.js';
 import { log } from './logger.js';
-import { getSettings } from './store.js';
 
 /**
  * Auto-update wiring via electron-updater. Status is pushed to the renderer on
@@ -105,9 +104,3 @@ export async function downloadAndInstall(): Promise<void> {
   autoUpdater.quitAndInstall(false, true);
 }
 
-/** Run a startup check when the user has opted in. */
-export async function maybeAutoCheck(): Promise<void> {
-  if (getSettings().autoCheckUpdates) {
-    await check();
-  }
-}

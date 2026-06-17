@@ -24,7 +24,6 @@ const debug = useDebugStore();
 
 let unErr: (() => void) | null = null;
 let unExit: (() => void) | null = null;
-let unUpdater: (() => void) | null = null;
 let unDeepLink: (() => void) | null = null;
 
 const ERROR_LABEL: Record<string, string> = {
@@ -76,28 +75,12 @@ onMounted(() => {
       });
     }
   });
-
-  unUpdater = bridge.on.updaterStatus((e) => {
-    switch (e.status) {
-      case 'available':
-        toast.info('Mise à jour disponible', { description: e.version ? `Version ${e.version}` : undefined });
-        break;
-      case 'ready':
-        toast.success('Mise à jour prête', { description: 'Elle sera installée au redémarrage.' });
-        break;
-      case 'error':
-        toast.error('Échec de la mise à jour');
-        break;
-      default:
-        break;
-    }
-  });
+  // Update status is handled by the splash loader (mandatory, no skip), not toasts here.
 });
 
 onBeforeUnmount(() => {
   unErr?.();
   unExit?.();
-  unUpdater?.();
   unDeepLink?.();
   downloads.dispose();
   instances.dispose();

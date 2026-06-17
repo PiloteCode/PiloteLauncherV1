@@ -9,8 +9,6 @@ import {
   Sun,
   Languages,
   Info,
-  RefreshCw,
-  Loader2,
   ExternalLink,
   Check,
 } from 'lucide-vue-next';
@@ -18,7 +16,7 @@ import { storeToRefs } from 'pinia';
 import { toast } from 'vue-sonner';
 import type { Theme, Locale, Settings } from '@pilote/types';
 import Sidebar from '@/components/Sidebar.vue';
-import { Button, ScrollArea, Slider, Switch } from '@/components/ui';
+import { Button, ScrollArea, Slider } from '@/components/ui';
 import { useSettingsStore } from '@/stores/settings';
 import { getBridge, hasBridge } from '@/lib/bridge';
 import { formatRam } from '@/lib/utils';
@@ -27,7 +25,6 @@ const settingsStore = useSettingsStore();
 const { settings, loaded } = storeToRefs(settingsStore);
 
 const ram = ref<number[]>([4096]);
-const checking = ref(false);
 const appVersion = ref('');
 const totalRamGb = 32; // slider ceiling; per-machine cap is enforced by the core at launch
 
@@ -35,10 +32,6 @@ const ramLabel = computed(() => formatRam(ram.value[0] ?? 4096));
 
 const themeValue = computed<Theme>(() => settings.value?.theme ?? 'dark');
 const localeValue = computed<Locale>(() => settings.value?.locale ?? 'fr');
-const autoUpdate = computed({
-  get: () => settings.value?.autoCheckUpdates ?? true,
-  set: (v: boolean) => void settingsStore.update({ autoCheckUpdates: v }),
-});
 
 const folders = computed(() => [
   { key: 'instances' as const, label: 'Dossier des instances', path: settings.value?.instancesDir ?? '', open: 'instances' as const },
@@ -109,22 +102,6 @@ function openProjectSite(): void {
   if (hasBridge()) void getBridge().app.openExternal('https://github.com');
 }
 
-async function checkUpdates(): Promise<void> {
-  if (!hasBridge()) return;
-  checking.value = true;
-  try {
-    const res = await getBridge().updater.check();
-    if (res.available) {
-      toast.info('Mise à jour disponible', { description: res.version ? `Version ${res.version}` : undefined });
-    } else {
-      toast.success('Lanceur à jour', { description: 'Vous utilisez la dernière version.' });
-    }
-  } catch (e) {
-    toast.error('Vérification impossible', { description: e instanceof Error ? e.message : undefined });
-  } finally {
-    checking.value = false;
-  }
-}
 </script>
 
 <template>
@@ -272,21 +249,18 @@ async function checkUpdates(): Promise<void> {
 
           <div class="flex items-center justify-between border-b border-border py-2.5">
             <div>
-              <p class="text-[13px] text-fg-3">Vérifier au démarrage</p>
-              <p class="text-[11.5px] text-muted-2">Rechercher automatiquement les mises à jour.</p>
+              <p class="text-[13px] text-fg-3">Mises à jour</p>
+              <p class="max-w-[420px] text-[11.5px] text-muted-2">
+                Installées automatiquement au démarrage — le lanceur garde toujours la dernière version.
+              </p>
             </div>
-            <Switch v-model="autoUpdate" />
+            <Check class="h-4 w-4 shrink-0 text-success" />
           </div>
 
           <div class="flex items-center justify-between pt-3">
             <Button variant="link" size="sm" @click="openProjectSite">
               Site du projet
               <ExternalLink class="h-3.5 w-3.5" />
-            </Button>
-            <Button variant="secondary" size="sm" :disabled="checking" @click="checkUpdates">
-              <Loader2 v-if="checking" class="h-3.5 w-3.5 animate-spin" />
-              <RefreshCw v-else class="h-3.5 w-3.5" />
-              Vérifier les mises à jour
             </Button>
           </div>
         </section>

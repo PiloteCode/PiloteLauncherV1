@@ -71,10 +71,25 @@ function getConf(): Conf<StoreShape> {
 
 // ── Settings ─────────────────────────────────────────────────────────────────
 
+/**
+ * Self-heal the backend URL: a packaged build must talk to production, but older installs
+ * persisted `http://localhost:3000` (the dev default) and would then find no instances.
+ * If we're packaged and the stored URL points at localhost, rewrite it to prod.
+ */
+function normalizeSettings(s: Settings): Settings {
+  if (app.isPackaged && /^https?:\/\/(localhost|127\.0\.0\.1)(:|\/|$)/i.test(s.apiBaseUrl)) {
+    const fixed = { ...s, apiBaseUrl: PROD_API_BASE_URL };
+    getConf().set('settings', fixed);
+    log.info(`Rewrote stale apiBaseUrl ${s.apiBaseUrl} -> ${PROD_API_BASE_URL}`);
+    return fixed;
+  }
+  return s;
+}
+
 export function getSettings(): Settings {
   const raw = getConf().get('settings');
   const parsed = SettingsSchema.safeParse(raw);
-  if (parsed.success) return parsed.data;
+  if (parsed.success) return normalizeSettings(parsed.data);
   // Recover gracefully from a corrupt/partial settings blob.
   log.warn('Settings invalid on disk, restoring defaults', parsed.error.flatten());
   const fresh = defaultSettings();

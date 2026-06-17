@@ -4,7 +4,7 @@ import { IPC } from '@pilote/types';
 import icon from '../../resources/icon.png?asset';
 import { registerIpc } from '../ipc/index.js';
 import { initLogger, log } from './logger.js';
-import { initUpdater, maybeAutoCheck } from './updater.js';
+import { initUpdater } from './updater.js';
 import { killAll } from './services/instances.js';
 import * as moduleService from './services/modules.js';
 import { assertSafeExternalUrl } from '@shared/security.js';
@@ -208,8 +208,7 @@ if (!gotLock) {
 
     // Handle a pilote:// link the app may have been cold-started with (Windows/Linux).
     handleDeepLink(deepLinkFromArgv(process.argv));
-
-    void maybeAutoCheck().catch((err) => log.warn('Auto update check failed', err));
+    // The renderer's splash drives the (mandatory) update check on launch.
 
     app.on('activate', () => {
       if (BrowserWindow.getAllWindows().length === 0) {
