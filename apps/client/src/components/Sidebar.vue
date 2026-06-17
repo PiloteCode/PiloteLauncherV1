@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { Library, Settings as SettingsIcon } from 'lucide-vue-next';
+import { Library, Puzzle, Settings as SettingsIcon } from 'lucide-vue-next';
 import { RouterLink } from 'vue-router';
 import ProfileSwitcher from '@/components/ProfileSwitcher.vue';
 
 const nav = [
   { to: '/home', label: 'Bibliothèque', icon: Library },
+  { to: '/modules', label: 'Modules', icon: Puzzle },
   { to: '/settings', label: 'Réglages', icon: SettingsIcon },
 ];
 </script>

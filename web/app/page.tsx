@@ -3,6 +3,7 @@ import { Nav } from '@/components/marketing/nav';
 import { Hero } from '@/components/marketing/hero';
 import { FeatureGrid } from '@/components/marketing/feature-grid';
 import { PrivateFlow } from '@/components/marketing/private-flow';
+import { ModulesTeaser } from '@/components/marketing/modules-teaser';
 import { Screenshots } from '@/components/marketing/screenshots';
 import { DownloadCTA } from '@/components/marketing/download-cta';
 import { Footer } from '@/components/marketing/footer';
@@ -23,6 +24,7 @@ export default function LandingPage() {
         <Hero />
         <FeatureGrid />
         <PrivateFlow />
+        <ModulesTeaser />
         <Screenshots />
         <DownloadCTA />
       </main>

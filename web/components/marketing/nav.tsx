@@ -10,6 +10,7 @@ import { Logo } from './logo';
 const LINKS: { href: string; label: string }[] = [
   { href: '/#features', label: 'Fonctionnalités' },
   { href: '/#private', label: 'Instances privées' },
+  { href: '/modules', label: 'Modules' },
   { href: '/download', label: 'Télécharger' },
   { href: '/docs', label: 'API' },
 ];

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onBeforeUnmount } from 'vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { toast } from 'vue-sonner';
 import TitleBar from '@/components/TitleBar.vue';
 import DownloadOverlay from '@/components/DownloadOverlay.vue';
@@ -9,16 +9,20 @@ import Toaster from '@/components/Toaster.vue';
 import { useDownloadsStore } from '@/stores/downloads';
 import { useInstancesStore } from '@/stores/instances';
 import { useSettingsStore } from '@/stores/settings';
+import { useModulesStore } from '@/stores/modules';
 import { getBridge, hasBridge } from '@/lib/bridge';
 
 const route = useRoute();
+const router = useRouter();
 const downloads = useDownloadsStore();
 const instances = useInstancesStore();
 const settings = useSettingsStore();
+const modules = useModulesStore();
 
 let unErr: (() => void) | null = null;
 let unExit: (() => void) | null = null;
 let unUpdater: (() => void) | null = null;
+let unDeepLink: (() => void) | null = null;
 
 const ERROR_LABEL: Record<string, string> = {
   network: 'Problème de connexion',
@@ -41,6 +45,19 @@ onMounted(() => {
   // Wire global IPC event subscriptions once.
   downloads.init();
   instances.init();
+  void modules.init();
+
+  // Marketplace "Install" deep links (pilote://module/install/<id>) land here.
+  unDeepLink = bridge.on.deepLink((e) => {
+    if (e.action === 'install' && e.id) {
+      void modules.install(e.id).then((view) => {
+        if (view) {
+          toast.success(`Module installé : ${view.name}`);
+          void router.push('/modules');
+        }
+      });
+    }
+  });
 
   unErr = downloads.onAnyError((e) => {
     toast.error(ERROR_LABEL[e.kind] ?? 'Erreur', { description: e.message });
@@ -75,8 +92,10 @@ onBeforeUnmount(() => {
   unErr?.();
   unExit?.();
   unUpdater?.();
+  unDeepLink?.();
   downloads.dispose();
   instances.dispose();
+  modules.dispose();
 });
 </script>
 

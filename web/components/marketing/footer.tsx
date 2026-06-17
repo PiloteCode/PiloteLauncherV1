@@ -10,6 +10,7 @@ const COLUMNS: { title: string; links: { label: string; href: string; external?:
     links: [
       { label: 'Fonctionnalités', href: '/#features' },
       { label: 'Instances privées', href: '/#private' },
+      { label: 'Modules', href: '/modules' },
       { label: 'Télécharger', href: '/download' },
     ],
   },
