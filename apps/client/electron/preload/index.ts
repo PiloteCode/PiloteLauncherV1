@@ -12,6 +12,9 @@ import type {
   ProgressEvent,
   LogLine,
   SessionExit,
+  ModuleView,
+  ServerPing,
+  DiscordActivity,
   SerializedError,
 } from '@pilote/types';
 
@@ -152,6 +155,25 @@ const launcher: LauncherBridge = {
     downloadAndInstall: () => invoke<void>(IPC.updater.downloadAndInstall),
   },
 
+  modules: {
+    list: () => invoke<ModuleView[]>(IPC.modules.list),
+    setEnabled: (id: string, enabled: boolean) =>
+      invoke<void>(IPC.modules.setEnabled, id, enabled),
+    getSettings: (id: string) =>
+      invoke<Record<string, unknown>>(IPC.modules.getSettings, id),
+    setSettings: (id: string, settings: Record<string, unknown>) =>
+      invoke<void>(IPC.modules.setSettings, id, settings),
+    install: (id: string) => invoke<ModuleView>(IPC.modules.install, id),
+  },
+
+  capabilities: {
+    systemMemoryMb: () => invoke<number>(IPC.capabilities.systemMemoryMb),
+    pingServer: (host: string, port?: number) =>
+      invoke<ServerPing>(IPC.capabilities.pingServer, host, port),
+    discordActivity: (activity: DiscordActivity | null) =>
+      invoke<void>(IPC.capabilities.discordActivity, activity),
+  },
+
   on: {
     progress: (cb: (e: ProgressEvent) => void) => subscribe(IPC.events.progress, cb),
     log: (cb: (e: LogLine) => void) => subscribe(IPC.events.log, cb),
@@ -165,6 +187,8 @@ const launcher: LauncherBridge = {
         percent?: number;
       }) => void,
     ) => subscribe(IPC.events.updaterStatus, cb),
+    deepLink: (cb: (e: { url: string; action?: string; id?: string }) => void) =>
+      subscribe(IPC.events.deepLink, cb),
   },
 };
 

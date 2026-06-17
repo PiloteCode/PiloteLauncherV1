@@ -1,11 +1,15 @@
-import { join } from 'node:path';
+import { join, resolve } from 'node:path';
 import { app, BrowserWindow, shell, session } from 'electron';
+import { IPC } from '@pilote/types';
 import icon from '../../resources/icon.png?asset';
 import { registerIpc } from '../ipc/index.js';
 import { initLogger, log } from './logger.js';
 import { initUpdater, maybeAutoCheck } from './updater.js';
 import { killAll } from './services/instances.js';
+import * as moduleService from './services/modules.js';
 import { assertSafeExternalUrl } from '@shared/security.js';
+
+const PROTOCOL = 'pilote';
 
 /**
  * Electron main entry. Enforces a single instance, creates the frameless launcher
@@ -106,17 +110,78 @@ function applyCsp(): void {
   });
 }
 
+// ── Deep links (pilote://) ──────────────────────────────────────────────────────
+
+/** Parse a pilote:// URL into an action + id (supports a few URL shapes). */
+function parseDeepLink(url: string): { action?: string; id?: string } {
+  try {
+    const u = new URL(url);
+    const seg = [u.hostname, ...u.pathname.split('/')].map((s) => s.trim()).filter(Boolean);
+    if (seg[0] === 'install-module' || seg[0] === 'modules') return { action: 'install', id: seg[1] };
+    if (seg[0] === 'module' && seg[1] === 'install') return { action: 'install', id: seg[2] };
+    return { action: seg[0], id: seg[1] };
+  } catch {
+    return {};
+  }
+}
+
+/** Handle an incoming deep link: run the action (e.g. install a module) + notify the UI. */
+function handleDeepLink(url: string | undefined): void {
+  if (!url || !url.startsWith(`${PROTOCOL}://`)) return;
+  const { action, id } = parseDeepLink(url);
+  log.info(`Deep link received: ${url} (action=${action ?? '?'}, id=${id ?? '?'})`);
+  if (action === 'install' && id) {
+    try {
+      moduleService.install(id);
+    } catch (err) {
+      log.warn(`Deep-link install failed for "${id}"`, err);
+    }
+  }
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore();
+    mainWindow.focus();
+    const send = () => mainWindow?.webContents.send(IPC.events.deepLink, { url, action, id });
+    if (mainWindow.webContents.isLoading()) mainWindow.webContents.once('did-finish-load', send);
+    else send();
+  }
+}
+
+function deepLinkFromArgv(argv: string[]): string | undefined {
+  return argv.find((a) => a.startsWith(`${PROTOCOL}://`));
+}
+
+/** Register the launcher as the handler for pilote:// links. */
+function registerProtocol(): void {
+  if (process.defaultApp && process.argv.length >= 2) {
+    // Dev: point the OS at this electron binary + entry script.
+    app.setAsDefaultProtocolClient(PROTOCOL, process.execPath, [resolve(process.argv[1] ?? '')]);
+  } else {
+    app.setAsDefaultProtocolClient(PROTOCOL);
+  }
+}
+
 // ── Single-instance lock ────────────────────────────────────────────────────────
 
 const gotLock = app.requestSingleInstanceLock();
 if (!gotLock) {
   app.quit();
 } else {
-  app.on('second-instance', () => {
-    if (mainWindow) {
+  registerProtocol();
+
+  app.on('second-instance', (_event, argv) => {
+    const link = deepLinkFromArgv(argv);
+    if (link) {
+      handleDeepLink(link);
+    } else if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus();
     }
+  });
+
+  // macOS delivers deep links via open-url.
+  app.on('open-url', (event, url) => {
+    event.preventDefault();
+    handleDeepLink(url);
   });
 
   app.whenReady().then(() => {
@@ -131,6 +196,9 @@ if (!gotLock) {
     mainWindow = createWindow();
     registerIpc(mainWindow);
     initUpdater();
+
+    // Handle a pilote:// link the app may have been cold-started with (Windows/Linux).
+    handleDeepLink(deepLinkFromArgv(process.argv));
 
     void maybeAutoCheck().catch((err) => log.warn('Auto update check failed', err));
 

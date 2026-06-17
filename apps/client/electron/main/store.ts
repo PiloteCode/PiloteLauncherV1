@@ -6,11 +6,13 @@ import {
   ProfileSchema,
   UnlockedInstanceSchema,
   InstanceOverrideSchema,
+  ModuleStateSchema,
   LauncherError,
   type Settings,
   type Profile,
   type UnlockedInstance,
   type InstanceOverride,
+  type ModuleState,
 } from '@pilote/types';
 import { log } from './logger.js';
 
@@ -26,6 +28,7 @@ interface StoreShape {
   activeProfileId: string | null;
   unlocked: UnlockedInstance[];
   overrides: InstanceOverride[];
+  modules: ModuleState[];
 }
 
 let conf: Conf<StoreShape> | undefined;
@@ -59,6 +62,7 @@ function getConf(): Conf<StoreShape> {
         activeProfileId: null,
         unlocked: [],
         overrides: [],
+        modules: [],
       },
     });
   }
@@ -194,4 +198,39 @@ export function setOverride(override: InstanceOverride): void {
   if (idx >= 0) list[idx] = validated;
   else list.push(validated);
   getConf().set('overrides', list);
+}
+
+// ── Module (plugin) state ───────────────────────────────────────────────────────
+
+export function getModuleStates(): ModuleState[] {
+  const raw = getConf().get('modules');
+  const parsed = ModuleStateSchema.array().safeParse(raw);
+  if (parsed.success) return parsed.data;
+  log.warn('Module states invalid on disk, resetting', parsed.error.flatten());
+  getConf().set('modules', []);
+  return [];
+}
+
+export function getModuleState(id: string): ModuleState | null {
+  return getModuleStates().find((m) => m.id === id) ?? null;
+}
+
+function writeModuleState(next: ModuleState): ModuleState {
+  const validated = ModuleStateSchema.parse(next);
+  const list = getModuleStates();
+  const idx = list.findIndex((m) => m.id === validated.id);
+  if (idx >= 0) list[idx] = validated;
+  else list.push(validated);
+  getConf().set('modules', list);
+  return validated;
+}
+
+export function setModuleEnabled(id: string, enabled: boolean): ModuleState {
+  const current = getModuleState(id);
+  return writeModuleState({ id, enabled, settings: current?.settings ?? {} });
+}
+
+export function setModuleSettings(id: string, settings: Record<string, unknown>): ModuleState {
+  const current = getModuleState(id);
+  return writeModuleState({ id, enabled: current?.enabled ?? false, settings });
 }

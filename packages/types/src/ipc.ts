@@ -2,7 +2,26 @@ import type { Instance, InstanceDto, InstanceInstallState } from './instance.js'
 import type { Profile, MojangLookup } from './profile.js';
 import type { LaunchOptions, ProgressEvent, LogLine, SessionExit } from './launch.js';
 import type { Settings, InstanceOverride, UnlockedInstance } from './settings.js';
+import type { ModuleView } from './module.js';
 import type { SerializedError } from './errors.js';
+
+/** Result of a Minecraft Server List Ping, used by the server-status module. */
+export interface ServerPing {
+  online: boolean;
+  players?: { online: number; max: number };
+  version?: string;
+  motd?: string;
+  latencyMs?: number;
+}
+
+/** Discord Rich Presence activity (subset), used by the discord module. */
+export interface DiscordActivity {
+  details?: string;
+  state?: string;
+  largeImageKey?: string;
+  largeImageText?: string;
+  startTimestamp?: number;
+}
 
 /**
  * The complete typed IPC surface exposed to the renderer as `window.launcher`.
@@ -81,6 +100,27 @@ export interface LauncherBridge {
     downloadAndInstall(): Promise<void>;
   };
 
+  // ── Modules (plugins) ─────────────────────────────────────────────────────────
+  modules: {
+    /** Built-in + installed modules, with their enabled/settings state. */
+    list(): Promise<ModuleView[]>;
+    setEnabled(id: string, enabled: boolean): Promise<void>;
+    getSettings(id: string): Promise<Record<string, unknown>>;
+    setSettings(id: string, settings: Record<string, unknown>): Promise<void>;
+    /** Install (enable) a module by id — used by the marketplace deep-link. */
+    install(id: string): Promise<ModuleView>;
+  };
+
+  // ── Capabilities (main-backed powers a module can use) ────────────────────────
+  capabilities: {
+    /** Total host RAM in MB (for the RAM auto-tuner). */
+    systemMemoryMb(): Promise<number>;
+    /** Minecraft Server List Ping. */
+    pingServer(host: string, port?: number): Promise<ServerPing>;
+    /** Set or clear Discord Rich Presence (no-op if Discord isn't running). */
+    discordActivity(activity: DiscordActivity | null): Promise<void>;
+  };
+
   // ── Events (main -> renderer) ─────────────────────────────────────────────────
   on: {
     progress(cb: (e: ProgressEvent) => void): () => void;
@@ -90,6 +130,8 @@ export interface LauncherBridge {
     updaterStatus(
       cb: (e: { status: 'checking' | 'available' | 'downloading' | 'ready' | 'none' | 'error'; version?: string; percent?: number }) => void,
     ): () => void;
+    /** A pilote:// deep link was opened (e.g. the marketplace "Install" button). */
+    deepLink(cb: (e: { url: string; action?: string; id?: string }) => void): () => void;
   };
 }
 
@@ -133,12 +175,25 @@ export const IPC = {
     check: 'updater:check',
     downloadAndInstall: 'updater:downloadAndInstall',
   },
+  modules: {
+    list: 'modules:list',
+    setEnabled: 'modules:setEnabled',
+    getSettings: 'modules:getSettings',
+    setSettings: 'modules:setSettings',
+    install: 'modules:install',
+  },
+  capabilities: {
+    systemMemoryMb: 'capabilities:systemMemoryMb',
+    pingServer: 'capabilities:pingServer',
+    discordActivity: 'capabilities:discordActivity',
+  },
   events: {
     progress: 'evt:progress',
     log: 'evt:log',
     sessionExit: 'evt:sessionExit',
     error: 'evt:error',
     updaterStatus: 'evt:updaterStatus',
+    deepLink: 'evt:deepLink',
   },
 } as const;
 

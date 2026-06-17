@@ -4,6 +4,8 @@ import { registerSettingsHandlers } from './settings.js';
 import { registerProfileHandlers } from './profiles.js';
 import { registerInstanceHandlers } from './instances.js';
 import { registerUpdaterHandlers } from './updater.js';
+import { registerModuleHandlers } from './modules.js';
+import { registerCapabilityHandlers } from './capabilities.js';
 
 /**
  * Register every IPC handler. Window-scoped handlers (frameless controls) bind to
@@ -17,4 +19,6 @@ export function registerIpc(win: BrowserWindow): void {
   registerProfileHandlers();
   registerInstanceHandlers();
   registerUpdaterHandlers();
+  registerModuleHandlers();
+  registerCapabilityHandlers();
 }

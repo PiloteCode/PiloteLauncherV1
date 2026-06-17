@@ -4,5 +4,6 @@ export * from './profile.js';
 export * from './launch.js';
 export * from './settings.js';
 export * from './api.js';
+export * from './module.js';
 export * from './errors.js';
 export * from './ipc.js';
