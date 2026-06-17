@@ -29,7 +29,9 @@ fi
 # shellcheck disable=SC1091
 [ -f ".env" ] && set -a && . ./.env && set +a
 
-: "${PORT:=3000}"
+# Bind to the host's allocated port. Pterodactyl/most PaaS expose it as SERVER_PORT;
+# fall back to PORT, then 3000 for local dev.
+: "${PORT:=${SERVER_PORT:-3000}}"
 export PORT
 export NODE_ENV="${NODE_ENV:-production}"
 
